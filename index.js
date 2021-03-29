@@ -7,38 +7,62 @@ Hooks.on("chatMessage", async (html, commandString, chatMessage) => {
         !game.user.character.data.data.attribs.san.value) {
         return;
     }
+    console.log('Step 1')
     let sc = commandString.match(/^\/sc\s+(.+)\/(.+)/i);
     let san = game.user.character.data.data.attribs.san.value;
-    let rollSuccess = sc[1].match(/(\d+)d(\d+)/i) || null;
-    let rollFail = sc[2].match(/((\d+)d(\d+))/i) || null;
-    let success = sc[1].match(/\d+$/i)[0] || null;
-    let fail = sc[2].match(/^\d+$/i)[0] || null;
 
-    if (!san || !(!rollSuccess && !success) || !(!rollFail && !fail)) return;
+    let rollSuccess = sc[1].match(/(\d+)d(\d+)/i) || null;
+    let success = (sc[1].match(/\d+$/i) && sc[1].match(/\d+$/i)[0]) || null;
+
+    let rollFail = sc[2].match(/((\d+)d(\d+))/i) || null;
+    let fail = (sc[2].match(/^\d+$/i) && sc[2].match(/^\d+$/i)[0]) || null;
+    console.log('Step 2')
+    console.log('san', san)
+    console.log('rollSuccess', rollSuccess)
+    console.log('success', success)
+    console.log('rollFail', rollFail)
+    console.log('fail', fail)
+
+    if (!san || !(rollSuccess || success) || !(rollFail || fail)) return;
     let rollDice = await new Roll('1d100').toMessage()
+    let lossSan = 0;
+    console.log('Step 3')
     switch (true) {
         case rollDice === 100:
             if (rollFail) {
-                rollFail[2] * rollFail[3] +
+                lossSan = rollFail[2] * rollFail[3] + Number(sc[2].replace(rollFail[1]));
             } else {
-
+                lossSan = fail;
             }
             break;
         case rollDice >= 96 && rollDice <= 100 && san <= 49:
-            //大失敗
-            break;
-        case rollDice === 1:
-            //大成功
+            if (rollFail) {
+                lossSan = rollFail[2] * rollFail[3] + Number(sc[2].replace(rollFail[1]));
+            } else {
+                lossSan = fail;
+            }
             break;
         case rollDice <= san:
             //成功
+            if (rollSuccess) {
+                lossSan = await new Roll(sc[1]).toMessage();
+            } else {
+                lossSan = Number(success);
+            }
+
             break;
         case rollDice > san:
-            //失敗
+            if (rollSuccess) {
+                lossSan = await new Roll(sc[2]).toMessage();
+            } else {
+                lossSan = Number(success);
+            }
             break;
         default:
             return;
     }
+    console.log('lossSan', lossSan)
+
 });
 
 
