@@ -1,14 +1,51 @@
+var renderCoC7ActorSheetInnerHTMLt;
+Hooks.on("chatCommandsReady", async function (chatCommands) {
+    chatCommands.registerCommand(chatCommands.createCommandFromData({
+        commandKey: "/sc",
+        invokeOnCommand: async (html, commandString, chatMessage) => {},
+        shouldDisplayToChat: false,
+        iconClass: "fa-sticky-note",
+        description: "San Check - /sc 1/1d10"
+    }));
+    chatCommands.registerCommand(chatCommands.createCommandFromData({
+        commandKey: "/ccrt",
+        invokeOnCommand: async (html, commandString, chatMessage) => {},
+        shouldDisplayToChat: false,
+        iconClass: "fa-sticky-note",
+        description: "Real time"
+    }));
+    chatCommands.registerCommand(chatCommands.createCommandFromData({
+        commandKey: "/ccsu",
+        invokeOnCommand: async (html, commandString, chatMessage) => {},
+        shouldDisplayToChat: false,
+        iconClass: "fa-sticky-note",
+        description: "Summary"
+    }));
+
+});
+Hooks.on("updateUser", (x, y) => {
+    if (y._id == game.user._id && character == null)
+        renderCoC7ActorSheetInnerHTMLt = null;
+})
+
 Hooks.on("chatMessage", async (html, commandString, chatMessage) => {
-    console.log('html', html)
-    console.log('commandString', commandString)
-    console.log('chatMessage', chatMessage)
+
     if (game.system.data.name != "CoC7" ||
-        !commandString.match(/^\/sc\s+(.+)\/(.+)/i) ||
         !game.user.character.data.data.attribs.san.value) {
         return;
     }
-    console.log('Step 1')
     let sc = commandString.match(/^\/sc\s+(.+)\/(.+)/i);
+    if (sc) {
+        await sanCheck(sc);
+    }
+    if (commandString.match(/^\/ccrt(\s+|)$/i)) {
+        return await ccrt();
+    }
+    if (commandString.match(/^\/ccsu(\s+|)$/i)) {
+        return await ccsu();
+    }
+});
+async function sanCheck(sc) {
     let san = game.user.character.data.data.attribs.san.value;
 
     let rollSuccess = sc[1].match(/(\d+)d(\d+)/i) || null;
@@ -16,96 +53,156 @@ Hooks.on("chatMessage", async (html, commandString, chatMessage) => {
 
     let rollFail = sc[2].match(/((\d+)d(\d+))/i) || null;
     let fail = (sc[2].match(/^\d+$/i) && sc[2].match(/^\d+$/i)[0]) || null;
-    console.log('Step 2')
-    console.log('san', san)
-    console.log('rollSuccess', rollSuccess)
-    console.log('success', success)
-    console.log('rollFail', rollFail)
-    console.log('fail', fail)
+
 
     if (!san || !(rollSuccess || success) || !(rollFail || fail)) return;
-    let rollDice = await new Roll('1d100').toMessage()
+    let roll = await new Roll('1d100').toMessage();
+    let rollDice = roll._roll._total
     let lossSan = 0;
-    console.log('Step 3')
+    let templossSan = null;
+
     switch (true) {
         case rollDice === 100:
             if (rollFail) {
-                lossSan = rollFail[2] * rollFail[3] + Number(sc[2].replace(rollFail[1]));
+                lossSan = Number(rollFail[2]) * Number(rollFail[3]);
+                (isNaN(Number(sc[2].replace(rollFail[1], '')))) ? null: lossSan = lossSan + Number(sc[2].replace(rollFail[1], ''));
             } else {
                 lossSan = fail;
             }
+            game.user.character.data.data.attribs.san.value = Math.max(0, game.user.character.data.data.attribs.san.value - lossSan);
+            if (renderCoC7ActorSheetInnerHTMLt) renderCoC7ActorSheetInnerHTMLt[0].value = game.user.character.data.data.attribs.san.value;
+            createMessageSC('大失敗，減少 ' + lossSan + ' 點San', game.user.character.data.data.attribs.san.value)
             break;
         case rollDice >= 96 && rollDice <= 100 && san <= 49:
             if (rollFail) {
-                lossSan = rollFail[2] * rollFail[3] + Number(sc[2].replace(rollFail[1]));
+                lossSan = Number(rollFail[2]) * Number(rollFail[3]);
+                (isNaN(Number(sc[2].replace(rollFail[1], '')))) ? null: lossSan = lossSan + Number(sc[2].replace(rollFail[1], ''));
             } else {
                 lossSan = fail;
             }
+            game.user.character.data.data.attribs.san.value = Math.max(0, game.user.character.data.data.attribs.san.value - lossSan);
+            if (renderCoC7ActorSheetInnerHTMLt) renderCoC7ActorSheetInnerHTMLt[0].value = game.user.character.data.data.attribs.san.value;
+            createMessageSC('大失敗，減少 ' + lossSan + ' 點San', game.user.character.data.data.attribs.san.value)
             break;
         case rollDice <= san:
             //成功
             if (rollSuccess) {
-                lossSan = await new Roll(sc[1]).toMessage();
+                templossSan = await new Roll(sc[1]).toMessage();
+                lossSan = templossSan._roll._total;
             } else {
                 lossSan = Number(success);
             }
 
+            game.user.character.data.data.attribs.san.value = Math.max(0, game.user.character.data.data.attribs.san.value - lossSan);
+            if (renderCoC7ActorSheetInnerHTMLt) renderCoC7ActorSheetInnerHTMLt[0].value = game.user.character.data.data.attribs.san.value;
+
+            if (lossSan > 0) {
+                createMessageSC('成功，減少 ' + lossSan + ' 點San', game.user.character.data.data.attribs.san.value)
+            } else
+                createMessageSC('成功，不需要減少San', game.user.character.data.data.attribs.san.value)
             break;
         case rollDice > san:
-            if (rollSuccess) {
-                lossSan = await new Roll(sc[2]).toMessage();
+            if (rollFail) {
+                templossSan = await new Roll(sc[2]).toMessage();
+                lossSan = templossSan._roll._total;
             } else {
                 lossSan = Number(success);
             }
+
+            game.user.character.data.data.attribs.san.value = Math.max(0, game.user.character.data.data.attribs.san.value - lossSan);
+            if (renderCoC7ActorSheetInnerHTMLt) renderCoC7ActorSheetInnerHTMLt[0].value = game.user.character.data.data.attribs.san.value;
+
+            if (lossSan > 0) {
+                createMessageSC('失敗，減少 ' + lossSan + ' 點San', game.user.character.data.data.attribs.san.value)
+            } else
+                createMessageSC('失敗，不需要減少San', game.user.character.data.data.attribs.san.value)
             break;
         default:
             return;
     }
-    console.log('lossSan', lossSan)
+    return;
+}
 
+
+var innerHTML;
+Hooks.on("renderChatLog", (dialog, html) => {
+    innerHTML = html.find(`#chat-message`);
 });
 
 
-const something = () => {
-    (async () => {
-        await new Roll('1d100').toMessage()
-    })()
-};
+Hooks.on("renderActorSheet", async (dialog, html) => {
+    if (html[0].id.match(game.user.character.id))
+        renderCoC7ActorSheetInnerHTMLt = html.find(`input[name="data.attribs.san.value"]`)
+})
+
+
+function createMessageSC(dice, san) {
+    content = `
+<div>
+<h3>${dice}</h3>
+<ul>
+<li>現在San值: ${san}</li>
+</ul>
+</div>`;
+    ChatMessage.create({
+        content: content
+    });
+}
+
+
+function createMessage(dice) {
+    content = `
+<div>
+<h3>${dice}</h3>
+</div>`;
+    console.log('content', content)
+    ChatMessage.create({
+        content: content
+    });
+}
+
 async function ccrt() {
     let result = '';
-    //var rollcc = Math.floor(Math.random() * 10);
-    //var time = Math.floor(Math.random() * 10) + 1;
-    //var PP = Math.floor(Math.random() * 100);
-    let rollcc = await rollbase.Dice(10) - 1
-    let time = await rollbase.Dice(10)
-    let PP = await rollbase.Dice(100) - 1
+    let temprollcc = await new Roll('1d10').roll()
+    console.log('temprollcc', temprollcc)
+    let rollcc = temprollcc._total - 1
+    let temptime = await new Roll('1d10').roll()
+    let time = temptime._total
+    let tempPP = await new Roll('1d100').roll()
+    let PP = tempPP._total - 1
+    console.log('B')
     if (rollcc <= 7) {
-        result = cocmadnessrt[rollcc] + '\n症狀持續' + time + '輪數';
+        result = cocmadnessrt[rollcc] + '<br>症狀持續' + time + '輪數';
     } else
     if (rollcc == 8) {
-        result = cocmadnessrt[rollcc] + '\n症狀持續' + time + '輪數' + ' \n' + cocManias[PP];
+        result = cocmadnessrt[rollcc] + '<br>症狀持續' + time + '輪數' + ' <br>' + cocManias[PP];
     } else
     if (rollcc == 9) {
-        result = cocmadnessrt[rollcc] + '\n症狀持續' + time + '輪數' + ' \n' + cocPhobias[PP];
+        result = cocmadnessrt[rollcc] + '<br>症狀持續' + time + '輪數' + ' <br>' + cocPhobias[PP];
     }
-    return result;
+    return await createMessage(result);
 }
+
+
 
 async function ccsu() {
     let result = '';
-    let rollcc = await rollbase.Dice(10) - 1
-    let time = await rollbase.Dice(10)
-    let PP = await rollbase.Dice(100) - 1
+    let temprollcc = await new Roll('1d10').roll()
+    let rollcc = temprollcc._total - 1
+    let temptime = await new Roll('1d10').roll()
+    let time = temptime._total
+    let tempPP = await new Roll('1d100').roll()
+    let PP = tempPP._total - 1
     if (rollcc <= 7) {
-        result = cocmadnesssu[rollcc] + '\n症狀持續' + time + '小時';
+        result = cocmadnesssu[rollcc] + '<br>症狀持續' + time + '小時';
     } else
     if (rollcc == 8) {
-        result = cocmadnesssu[rollcc] + '\n症狀持續' + time + '小時' + ' \n' + cocManias[PP];
+        result = cocmadnesssu[rollcc] + '<br>症狀持續' + time + '小時' + ' <br>' + cocManias[PP];
     } else
     if (rollcc == 9) {
-        result = cocmadnesssu[rollcc] + '\n症狀持續' + time + '小時' + ' \n' + cocPhobias[PP];
+        result = cocmadnesssu[rollcc] + '<br>症狀持續' + time + '小時' + ' <br>' + cocPhobias[PP];
     }
-    return result;
+    return await createMessage(result);
 }
 
 const cocmadnessrt = [

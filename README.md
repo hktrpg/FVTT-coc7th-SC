@@ -7,6 +7,8 @@
 </p>
 
 - San Check by Commond - /sc 1/2d3 
+- The Real Time Bout of Madness - /ccrt
+- The Summary Bout of Madness - /ccsu
 - It will read the san on character sheet
 - use on coc7th character sheet from HavlockV/CoC7-FoundryVTT
 ## TO DO LIST

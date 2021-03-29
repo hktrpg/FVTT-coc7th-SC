@@ -6,9 +6,10 @@
   "version": "1.0.0",
   "minimumCoreVersion": "0.6.0",
   "compatibleCoreVersion": "1.0.0",
-  "styles": [
+  "styles": [],
+  "esmodules": [
+    "index.js"
   ],
-  "esmodules": ["index.js"],
   "languages": [
     {
       "lang": "en",
@@ -23,5 +24,11 @@
   ],
   "url": "https://github.com/hktrpg/FVTT-coc7th-SC/",
   "manifest": "https://raw.githubusercontent.com/hktrpg/FVTT-coc7th-SC/master/module.json",
-  "download": "https://github.com/hktrpg/FVTT-coc7th-SC/archive/refs/heads/main.zip"
+  "download": "https://github.com/hktrpg/FVTT-coc7th-SC/archive/refs/heads/main.zip",
+  "dependencies": [
+    {
+      "name": "Library: Chat Commands",
+      "manifest": "https://raw.githubusercontent.com/League-of-Foundry-Developers/Chat-Commands-Lib/master/module.json"
+    }
+  ]
 }
