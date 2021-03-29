@@ -1,3 +1,12 @@
+let chatCommands = new ChatCommands();
+chatCommands.createCommandFromData({
+    commandKey: "/sc",
+    invokeOnCommand: (chatlog, messageText, chatdata) => {},
+    shouldDisplayToChat: false,
+    iconClass: "fa-dice-d20",
+    description: "Speak in character"
+})
+
 Hooks.on("chatMessage", (html, commandString, chatMessage) => {
     console.log('html', html)
     console.log('commandString', commandString)
