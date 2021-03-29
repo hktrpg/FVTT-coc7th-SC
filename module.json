@@ -1,0 +1,27 @@
+{
+  "name": "coc7th-sc",
+  "title": "coc7th San Check",
+  "description": "new commond - /sc 1/1d100",
+  "author": "Sad",
+  "version": "1.0.0",
+  "minimumCoreVersion": "0.6.0",
+  "compatibleCoreVersion": "1.0.0",
+  "styles": [
+  ],
+  "esmodules": ["index.js"],
+  "languages": [
+    {
+      "lang": "en",
+      "name": "English",
+      "path": "langs/en.json"
+    },
+    {
+      "lang": "zh-tw",
+      "name": "正體中文",
+      "path": "langs/zh-tw.json"
+    }
+  ],
+  "url": "https://github.com/hktrpg/FVTT-coc7th-SC/",
+  "manifest": "https://raw.githubusercontent.com/hktrpg/FVTT-coc7th-SC/master/module.json",
+  "download": "https://github.com/hktrpg/FVTT-coc7th-SC/archive/refs/heads/main.zip"
+}
