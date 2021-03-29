@@ -1,32 +1,44 @@
-let chatCommands = new ChatCommands();
-chatCommands.createCommandFromData({
-    commandKey: "/sc",
-    invokeOnCommand: (chatlog, messageText, chatdata) => {},
-    shouldDisplayToChat: false,
-    iconClass: "fa-dice-d20",
-    description: "Speak in character"
-})
-
-Hooks.on("chatMessage", (html, commandString, chatMessage) => {
+Hooks.on("chatMessage", async (html, commandString, chatMessage) => {
     console.log('html', html)
     console.log('commandString', commandString)
     console.log('chatMessage', chatMessage)
     if (game.system.data.name != "CoC7" ||
-        !commandString.match(/^\/sc\s+(\w+)\/(\w+)/i) ||
+        !commandString.match(/^\/sc\s+(.+)\/(.+)/i) ||
         !game.user.character.data.data.attribs.san.value) {
         return;
     }
-    let sc = commandString.match(/^\/sc\s+(\w+)\/(\w+)/i);
+    let sc = commandString.match(/^\/sc\s+(.+)\/(.+)/i);
     let san = game.user.character.data.data.attribs.san.value;
-    let rollSuccess = sc[1].match(/^(\d+)d(\d+)/i) || null;
-    let rollFail = sc[2].match(/^(\d+)d(\d+)/i) || null;
-    let success = sc[1].match(/^\d+/i)[0] || null;
-    let fail = sc[2].match(/^\d+/i)[0] || null;
+    let rollSuccess = sc[1].match(/(\d+)d(\d+)/i) || null;
+    let rollFail = sc[2].match(/((\d+)d(\d+))/i) || null;
+    let success = sc[1].match(/\d+$/i)[0] || null;
+    let fail = sc[2].match(/^\d+$/i)[0] || null;
 
-    console.log('sc', sc);
-    console.log('san', san);
-    console.log('success', success);
-    console.log('fail', fail);
+    if (!san || !(!rollSuccess && !success) || !(!rollFail && !fail)) return;
+    let rollDice = await new Roll('1d100').toMessage()
+    switch (true) {
+        case rollDice === 100:
+            if (rollFail) {
+                rollFail[2] * rollFail[3] +
+            } else {
+
+            }
+            break;
+        case rollDice >= 96 && rollDice <= 100 && san <= 49:
+            //大失敗
+            break;
+        case rollDice === 1:
+            //大成功
+            break;
+        case rollDice <= san:
+            //成功
+            break;
+        case rollDice > san:
+            //失敗
+            break;
+        default:
+            return;
+    }
 });
 
 
@@ -35,7 +47,42 @@ const something = () => {
         await new Roll('1d100').toMessage()
     })()
 };
+async function ccrt() {
+    let result = '';
+    //var rollcc = Math.floor(Math.random() * 10);
+    //var time = Math.floor(Math.random() * 10) + 1;
+    //var PP = Math.floor(Math.random() * 100);
+    let rollcc = await rollbase.Dice(10) - 1
+    let time = await rollbase.Dice(10)
+    let PP = await rollbase.Dice(100) - 1
+    if (rollcc <= 7) {
+        result = cocmadnessrt[rollcc] + '\n症狀持續' + time + '輪數';
+    } else
+    if (rollcc == 8) {
+        result = cocmadnessrt[rollcc] + '\n症狀持續' + time + '輪數' + ' \n' + cocManias[PP];
+    } else
+    if (rollcc == 9) {
+        result = cocmadnessrt[rollcc] + '\n症狀持續' + time + '輪數' + ' \n' + cocPhobias[PP];
+    }
+    return result;
+}
 
+async function ccsu() {
+    let result = '';
+    let rollcc = await rollbase.Dice(10) - 1
+    let time = await rollbase.Dice(10)
+    let PP = await rollbase.Dice(100) - 1
+    if (rollcc <= 7) {
+        result = cocmadnesssu[rollcc] + '\n症狀持續' + time + '小時';
+    } else
+    if (rollcc == 8) {
+        result = cocmadnesssu[rollcc] + '\n症狀持續' + time + '小時' + ' \n' + cocManias[PP];
+    } else
+    if (rollcc == 9) {
+        result = cocmadnesssu[rollcc] + '\n症狀持續' + time + '小時' + ' \n' + cocPhobias[PP];
+    }
+    return result;
+}
 
 const cocmadnessrt = [
     ['1)失憶：調查員會發現自己只記得最後身處的安全地點，卻沒有任何來到這裡的記憶。例如，調查員前一刻還在家中吃著早飯，下一刻就已經直面著不知名的怪物。'],
