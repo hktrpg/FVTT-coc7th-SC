@@ -23,7 +23,7 @@
     }
   ],
   "url": "https://github.com/hktrpg/FVTT-coc7th-SC/",
-  "manifest": "https://raw.githubusercontent.com/hktrpg/FVTT-coc7th-SC/master/module.json",
+  "manifest": "https://raw.githubusercontent.com/hktrpg/FVTT-coc7th-SC/main/module.json",
   "download": "https://github.com/hktrpg/FVTT-coc7th-SC/archive/refs/heads/main.zip",
   "dependencies": [
     {
