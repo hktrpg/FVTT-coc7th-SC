@@ -27,7 +27,7 @@
   "download": "https://github.com/hktrpg/FVTT-coc7th-SC/archive/refs/heads/main.zip",
   "dependencies": [
     {
-      "name": "Library: Chat Commands",
+      "name": "_chatcommands",
       "manifest": "https://github.com/League-of-Foundry-Developers/Chat-Commands-Lib/releases/download/1.3.2/module.json"
     }
   ]
