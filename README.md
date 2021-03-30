@@ -14,3 +14,5 @@
 - use on coc7th character sheet from HavlockV/CoC7-FoundryVTT
 ## TO DO LIST
 - [ ]Button
+- [ ]國際化
+- [ ]美化
